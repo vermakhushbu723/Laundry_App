@@ -1,6 +1,12 @@
 class AppConstants {
   // API Configuration
-  static const String baseUrl = 'http://192.168.31.80:3000/api';
+  // For Android Emulator: Use 10.0.2.2 instead of localhost
+  // For Physical Device: Use your computer's IP address (e.g., 192.168.x.x)
+  // For Production: Use the deployed URL
+
+  static const String baseUrl = 'https://laundry-backend-022k.onrender.com/api';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android Emulator
+  // static const String baseUrl = 'http://192.168.31.80:3000/api'; // Physical Device
   static const String apiVersion = 'v1';
 
   // API Endpoints

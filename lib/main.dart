@@ -7,6 +7,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/home/dashboard_screen.dart';
 import 'screens/orders/orders_screen.dart';
 import 'screens/orders/new_order_screen.dart';
+import 'screens/services/services_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,8 +40,7 @@ class MyApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardScreen(),
           '/orders': (context) => const OrdersScreen(),
           '/new-order': (context) => const NewOrderScreen(),
-          '/services': (context) =>
-              const DashboardScreen(), // TODO: Create services screen
+          '/services': (context) => const ServicesScreen(),
           '/support': (context) =>
               const DashboardScreen(), // TODO: Create support screen
           '/profile': (context) =>

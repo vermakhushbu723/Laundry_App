@@ -8,7 +8,7 @@ class OrderService {
   final _storage = StorageService();
 
   Future<String?> _getToken() async {
-    return await _storage.getToken();
+    return _storage.getToken();
   }
 
   Future<Map<String, String>> _getHeaders() async {

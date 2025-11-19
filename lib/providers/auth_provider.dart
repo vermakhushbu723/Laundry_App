@@ -108,6 +108,12 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Update user data
+  void updateUser(UserModel updatedUser) {
+    _user = updatedUser;
+    notifyListeners();
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

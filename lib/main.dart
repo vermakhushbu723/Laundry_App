@@ -8,6 +8,9 @@ import 'screens/home/dashboard_screen.dart';
 import 'screens/orders/orders_screen.dart';
 import 'screens/orders/new_order_screen.dart';
 import 'screens/services/services_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/support/support_screen.dart';
+import 'screens/notifications/notifications_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,10 +44,10 @@ class MyApp extends StatelessWidget {
           '/orders': (context) => const OrdersScreen(),
           '/new-order': (context) => const NewOrderScreen(),
           '/services': (context) => const ServicesScreen(),
-          '/support': (context) =>
-              const DashboardScreen(), // TODO: Create support screen
-          '/profile': (context) =>
-              const DashboardScreen(), // TODO: Create profile screen
+          '/profile': (context) => const ProfileScreen(),
+          '/support': (context) => const SupportScreen(),
+          '/help': (context) => const SupportScreen(),
+          '/notifications': (context) => const NotificationsScreen(),
         },
       ),
     );

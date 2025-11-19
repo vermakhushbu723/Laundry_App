@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/order_model.dart';
+import '../../services/user_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -12,7 +13,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // Mock data - will be replaced with API calls
+  final UserService _userService = UserService();
+  bool _isLoading = true;
   int totalOrders = 0;
   int deliveredOrders = 0;
   int cancelledOrders = 0;
@@ -26,13 +28,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
-    // TODO: Load data from API
-    setState(() {
-      totalOrders = 12;
-      deliveredOrders = 5;
-      cancelledOrders = 1;
-      pendingOrders = 6;
-    });
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _userService.getDashboardData();
+
+      if (response['success'] == true && mounted) {
+        final stats = response['stats'] as Map<String, dynamic>?;
+        final orders = response['recentOrders'] as List?;
+
+        setState(() {
+          totalOrders = stats?['totalOrders'] ?? 0;
+          deliveredOrders = stats?['deliveredOrders'] ?? 0;
+          cancelledOrders = stats?['cancelledOrders'] ?? 0;
+          pendingOrders = stats?['pendingOrders'] ?? 0;
+
+          if (orders != null) {
+            recentOrders = orders
+                .map((order) => OrderModel.fromJson(order))
+                .toList();
+          }
+        });
+      }
+    } catch (e) {
+      print('Error loading dashboard data: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load dashboard data: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -184,144 +216,158 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // Dashboard Content
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Order Statistics Cards
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Total Orders',
-                              totalOrders.toString(),
-                              Icons.shopping_bag_outlined,
-                              AppColors.primary,
-                              Colors.blue.shade50,
-                            ),
+                child: _isLoading
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(40.0),
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Pending',
-                              pendingOrders.toString(),
-                              Icons.pending_outlined,
-                              Colors.orange,
-                              Colors.orange.shade50,
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Order Statistics Cards
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildStatCard(
+                                    'Total Orders',
+                                    totalOrders.toString(),
+                                    Icons.shopping_bag_outlined,
+                                    AppColors.primary,
+                                    Colors.blue.shade50,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildStatCard(
+                                    'Pending',
+                                    pendingOrders.toString(),
+                                    Icons.pending_outlined,
+                                    Colors.orange,
+                                    Colors.orange.shade50,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Delivered',
-                              deliveredOrders.toString(),
-                              Icons.check_circle_outline,
-                              Colors.green,
-                              Colors.green.shade50,
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildStatCard(
+                                    'Delivered',
+                                    deliveredOrders.toString(),
+                                    Icons.check_circle_outline,
+                                    Colors.green,
+                                    Colors.green.shade50,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildStatCard(
+                                    'Cancelled',
+                                    cancelledOrders.toString(),
+                                    Icons.cancel_outlined,
+                                    Colors.red,
+                                    Colors.red.shade50,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Cancelled',
-                              cancelledOrders.toString(),
-                              Icons.cancel_outlined,
-                              Colors.red,
-                              Colors.red.shade50,
-                            ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 32),
+                            const SizedBox(height: 32),
 
-                      // Quick Actions
-                      const Text(
-                        'Quick Actions',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                            // Quick Actions
+                            const Text(
+                              'Quick Actions',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildQuickAction(
+                                  'New Order',
+                                  Icons.add_shopping_cart,
+                                  AppColors.primary,
+                                  () =>
+                                      Navigator.pushNamed(context, '/services'),
+                                ),
+                                _buildQuickAction(
+                                  'My Orders',
+                                  Icons.list_alt,
+                                  Colors.orange,
+                                  () => Navigator.pushNamed(context, '/orders'),
+                                ),
+                                _buildQuickAction(
+                                  'Services',
+                                  Icons.local_laundry_service,
+                                  Colors.purple,
+                                  () =>
+                                      Navigator.pushNamed(context, '/services'),
+                                ),
+                                _buildQuickAction(
+                                  'Support',
+                                  Icons.support_agent,
+                                  Colors.green,
+                                  () => Navigator.pushNamed(context, '/help'),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // Recent Orders Section
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Recent Orders',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pushNamed(context, '/orders'),
+                                  child: const Text('View All'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Recent Orders List
+                            recentOrders.isEmpty
+                                ? _buildEmptyState()
+                                : ListView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: recentOrders.length,
+                                    itemBuilder: (context, index) {
+                                      return _buildOrderCard(
+                                        recentOrders[index],
+                                      );
+                                    },
+                                  ),
+
+                            // Promotional Banner
+                            const SizedBox(height: 24),
+                            _buildPromotionalBanner(),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildQuickAction(
-                            'New Order',
-                            Icons.add_shopping_cart,
-                            AppColors.primary,
-                            () => Navigator.pushNamed(context, '/services'),
-                          ),
-                          _buildQuickAction(
-                            'My Orders',
-                            Icons.list_alt,
-                            Colors.orange,
-                            () => Navigator.pushNamed(context, '/orders'),
-                          ),
-                          _buildQuickAction(
-                            'Services',
-                            Icons.local_laundry_service,
-                            Colors.purple,
-                            () => Navigator.pushNamed(context, '/services'),
-                          ),
-                          _buildQuickAction(
-                            'Support',
-                            Icons.support_agent,
-                            Colors.green,
-                            () => Navigator.pushNamed(context, '/help'),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Recent Orders Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Recent Orders',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/orders'),
-                            child: const Text('View All'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Recent Orders List
-                      recentOrders.isEmpty
-                          ? _buildEmptyState()
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: recentOrders.length,
-                              itemBuilder: (context, index) {
-                                return _buildOrderCard(recentOrders[index]);
-                              },
-                            ),
-
-                      // Promotional Banner
-                      const SizedBox(height: 24),
-                      _buildPromotionalBanner(),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),

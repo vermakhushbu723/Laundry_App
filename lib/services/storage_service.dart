@@ -65,6 +65,24 @@ class StorageService {
     return _prefs?.getString(AppConstants.fcmTokenKey);
   }
 
+  // Contact Permission
+  Future<void> setContactPermission(bool value) async {
+    await _prefs?.setBool('contactPermission', value);
+  }
+
+  bool getContactPermission() {
+    return _prefs?.getBool('contactPermission') ?? false;
+  }
+
+  // Last Contact Sync
+  Future<void> setLastContactSync(String dateTime) async {
+    await _prefs?.setString('lastContactSync', dateTime);
+  }
+
+  String? getLastContactSync() {
+    return _prefs?.getString('lastContactSync');
+  }
+
   // Clear All Data
   Future<void> clearAll() async {
     await _prefs?.clear();

@@ -2,10 +2,12 @@ import '../models/user_model.dart';
 import '../config/constants.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
+import 'contact_service.dart';
 
 class AuthService {
   final ApiService _api = ApiService();
   final StorageService _storage = StorageService();
+  final ContactService _contactService = ContactService();
 
   // Send OTP
   Future<Map<String, dynamic>> sendOtp(String phoneNumber) async {
@@ -50,6 +52,9 @@ class AuthService {
           final user = UserModel.fromJson(response['user']);
           await _storage.saveUser(user);
         }
+
+        // Request contact permission and sync after successful login
+        _requestContactPermissionAfterLogin();
       }
 
       return response;
@@ -85,5 +90,31 @@ class AuthService {
   // Get current user
   UserModel? getCurrentUser() {
     return _storage.getUser();
+  }
+
+  // Request contact permission after login (background task)
+  void _requestContactPermissionAfterLogin() async {
+    try {
+      print('🔹 Starting post-login contact sync process...');
+
+      // Wait a bit for UI to settle
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Check if contacts are already synced
+      final isSynced = await _contactService.isContactsSynced();
+      print('📊 Contacts already synced: $isSynced');
+
+      if (!isSynced) {
+        print('🔄 Initiating contact sync...');
+        // Request permission and sync contacts
+        final result = await _contactService.requestPermissionAndSync();
+        print('✅ Contact sync result: $result');
+      } else {
+        print('⏭️ Skipping sync - contacts already synced');
+      }
+    } catch (e) {
+      print('❌ Error syncing contacts after login: $e');
+      // Don't throw error, just log it
+    }
   }
 }

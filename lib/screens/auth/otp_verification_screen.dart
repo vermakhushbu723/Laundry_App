@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../home/dashboard_screen.dart';
+import '../profile/profile_setup_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -74,10 +75,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      );
+      final user = authProvider.user;
+
+      // Check if user profile is complete
+      final bool isProfileComplete =
+          user?.name != null &&
+          user!.name!.isNotEmpty &&
+          user.address != null &&
+          user.address!.isNotEmpty;
+
+      if (isProfileComplete) {
+        // Profile is complete, go to dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      } else {
+        // Profile is incomplete, go to profile setup
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileSetupScreen()),
+        );
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

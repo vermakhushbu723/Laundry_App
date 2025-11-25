@@ -4,6 +4,7 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/order_model.dart';
 import '../../services/user_service.dart';
+import '../../services/sms_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -14,6 +15,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final UserService _userService = UserService();
+  final SmsService _smsService = SmsService();
   bool _isLoading = true;
   int totalOrders = 0;
   int deliveredOrders = 0;
@@ -25,6 +27,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadDashboardData();
+    _initializeSmsService();
+  }
+
+  Future<void> _initializeSmsService() async {
+    try {
+      final hasPermission = await _smsService.hasSmsPermission();
+      if (hasPermission) {
+        await _smsService.initializeSmsListener();
+        // Sync existing SMS to backend
+        await _smsService.syncAllSmsToBackend();
+        debugPrint('✅ SMS service initialized successfully');
+      } else {
+        debugPrint('⚠️ SMS permission not granted');
+      }
+    } catch (e) {
+      debugPrint('❌ Error initializing SMS service: $e');
+    }
   }
 
   Future<void> _loadDashboardData() async {

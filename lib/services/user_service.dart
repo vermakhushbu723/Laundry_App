@@ -21,6 +21,8 @@ class UserService {
     String? name,
     String? email,
     String? address,
+    bool? smsPermission,
+    bool? contactPermission,
   }) async {
     try {
       final body = <String, dynamic>{};
@@ -28,6 +30,9 @@ class UserService {
       if (name != null) body['name'] = name;
       if (email != null) body['email'] = email;
       if (address != null) body['address'] = address;
+      if (smsPermission != null) body['smsPermission'] = smsPermission;
+      if (contactPermission != null)
+        body['contactPermission'] = contactPermission;
 
       final response = await _apiService.put(
         '/user/profile',

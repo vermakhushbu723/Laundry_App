@@ -11,6 +11,7 @@ import 'screens/services/services_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/support/support_screen.dart';
 import 'screens/notifications/notifications_screen.dart';
+import 'screens/profile/profile_setup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,9 +35,22 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         home: Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            return authProvider.isLoggedIn
-                ? const DashboardScreen()
-                : const LoginScreen();
+            if (!authProvider.isLoggedIn) {
+              return const LoginScreen();
+            }
+
+            final user = authProvider.user;
+            final bool isProfileComplete =
+                user?.name != null &&
+                user!.name!.isNotEmpty &&
+                user.address != null &&
+                user.address!.isNotEmpty;
+
+            if (!isProfileComplete) {
+              return const ProfileSetupScreen();
+            }
+
+            return const DashboardScreen();
           },
         ),
         routes: {

@@ -51,6 +51,11 @@ dependencies:
   # SMS & OTP
   sms_autofill: ^2.3.0
   pinput: ^5.0.0
+  flutter_sms_inbox: ^1.0.3
+  
+  # Background Service
+  # workmanager: ^0.5.2  # Temporarily disabled due to compatibility issues
+  flutter_foreground_task: ^8.14.0
   
   # Contact Fetching
   flutter_contacts: ^1.1.7+1

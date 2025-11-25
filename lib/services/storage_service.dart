@@ -83,6 +83,12 @@ class StorageService {
     return _prefs?.getString('lastContactSync');
   }
 
+  // Get User ID
+  String? getUserId() {
+    final user = getUser();
+    return user?.id;
+  }
+
   // Clear All Data
   Future<void> clearAll() async {
     await _prefs?.clear();

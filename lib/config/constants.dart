@@ -21,7 +21,7 @@ class AppConstants {
   static const String notificationsEndpoint = '/notifications';
 
   // App Configuration
-  static const String appName = 'Laundry App';
+  static const String appName = 'DhobiGo';
   static const int otpLength = 6;
   static const int otpTimeout = 60; // seconds
   static const String staticOtp = '999000'; // Static OTP for development

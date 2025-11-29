@@ -47,7 +47,7 @@ class SmsTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp) {
     // This is called every interval set in notification settings
     FlutterForegroundTask.updateService(
-      notificationTitle: 'Laundry App Running',
+      notificationTitle: 'DhobiGo Running',
       notificationText: 'SMS monitoring active',
     );
   }
@@ -87,9 +87,9 @@ class BackgroundSmsService {
       // Initialize Foreground Task
       FlutterForegroundTask.init(
         androidNotificationOptions: AndroidNotificationOptions(
-          channelId: 'laundry_sms_service',
-          channelName: 'Laundry SMS Service',
-          channelDescription: 'SMS monitoring service for Laundry App',
+          channelId: 'dhobigo_sms_service',
+          channelName: 'DhobiGo SMS Service',
+          channelDescription: 'SMS monitoring service for DhobiGo',
           channelImportance: NotificationChannelImportance.LOW,
           priority: NotificationPriority.LOW,
         ),
@@ -123,7 +123,7 @@ class BackgroundSmsService {
       // Start foreground service
       await FlutterForegroundTask.startService(
         serviceId: 256,
-        notificationTitle: 'Laundry App Running',
+        notificationTitle: 'DhobiGo Running',
         notificationText: 'SMS monitoring active',
         callback: startCallback,
       );

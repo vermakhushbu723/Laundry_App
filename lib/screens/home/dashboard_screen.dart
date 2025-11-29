@@ -122,16 +122,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Row(
                             children: [
                               CircleAvatar(
-                                radius: 30,
+                                radius: 35,
                                 backgroundColor: Colors.white,
-                                child: Text(
-                                  user?.name?.substring(0, 1).toUpperCase() ??
-                                      user?.phoneNumber.substring(0, 1) ??
-                                      'U',
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.contain,
                                   ),
                                 ),
                               ),

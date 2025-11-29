@@ -157,8 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // Profile Avatar
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
@@ -170,17 +170,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Text(
-                          user?.name?.substring(0, 1).toUpperCase() ??
-                              user?.phoneNumber.substring(0, 1) ??
-                              'U',
-                          style: const TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2193B0),
-                          ),
-                        ),
+                      padding: const EdgeInsets.all(20),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                     const SizedBox(height: 16),

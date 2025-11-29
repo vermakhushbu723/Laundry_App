@@ -91,16 +91,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   // App Logo/Icon
                   Center(
                     child: Container(
-                      width: 120,
-                      height: 120,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.local_laundry_service,
-                        size: 60,
-                        color: AppColors.primary,
+                      padding: const EdgeInsets.all(20),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

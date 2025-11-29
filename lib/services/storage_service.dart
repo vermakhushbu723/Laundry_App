@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../models/user_model.dart';
 import '../config/constants.dart';
@@ -11,40 +12,92 @@ class StorageService {
   SharedPreferences? _prefs;
 
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    try {
+      debugPrint('🔄 StorageService: Initializing SharedPreferences...');
+      _prefs = await SharedPreferences.getInstance();
+      debugPrint(
+        '✅ StorageService: SharedPreferences initialized successfully',
+      );
+    } catch (e, stackTrace) {
+      debugPrint('🔴 StorageService: Failed to initialize - $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   // User Token
   Future<void> saveToken(String token) async {
-    await _prefs?.setString(AppConstants.userTokenKey, token);
+    try {
+      debugPrint('🔄 StorageService: Saving token...');
+      await _prefs?.setString(AppConstants.userTokenKey, token);
+      debugPrint('✅ StorageService: Token saved');
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error saving token - $e');
+      rethrow;
+    }
   }
 
   String? getToken() {
-    return _prefs?.getString(AppConstants.userTokenKey);
+    try {
+      final token = _prefs?.getString(AppConstants.userTokenKey);
+      debugPrint(
+        '🔍 StorageService: Getting token - ${token != null ? "Found" : "Not found"}',
+      );
+      return token;
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error getting token - $e');
+      return null;
+    }
   }
 
   Future<void> removeToken() async {
-    await _prefs?.remove(AppConstants.userTokenKey);
+    try {
+      debugPrint('🔄 StorageService: Removing token...');
+      await _prefs?.remove(AppConstants.userTokenKey);
+      debugPrint('✅ StorageService: Token removed');
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error removing token - $e');
+    }
   }
 
   // User Data
   Future<void> saveUser(UserModel user) async {
-    await _prefs?.setString(
-      AppConstants.userDataKey,
-      jsonEncode(user.toJson()),
-    );
+    try {
+      debugPrint('🔄 StorageService: Saving user data...');
+      await _prefs?.setString(
+        AppConstants.userDataKey,
+        jsonEncode(user.toJson()),
+      );
+      debugPrint('✅ StorageService: User data saved');
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error saving user - $e');
+      rethrow;
+    }
   }
 
   UserModel? getUser() {
-    final userString = _prefs?.getString(AppConstants.userDataKey);
-    if (userString != null) {
-      return UserModel.fromJson(jsonDecode(userString));
+    try {
+      final userString = _prefs?.getString(AppConstants.userDataKey);
+      if (userString != null) {
+        debugPrint('🔍 StorageService: User data found');
+        return UserModel.fromJson(jsonDecode(userString));
+      }
+      debugPrint('🔍 StorageService: No user data found');
+      return null;
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error getting user - $e');
+      return null;
     }
-    return null;
   }
 
   Future<void> removeUser() async {
-    await _prefs?.remove(AppConstants.userDataKey);
+    try {
+      debugPrint('🔄 StorageService: Removing user data...');
+      await _prefs?.remove(AppConstants.userDataKey);
+      debugPrint('✅ StorageService: User data removed');
+    } catch (e) {
+      debugPrint('🔴 StorageService: Error removing user - $e');
+    }
   }
 
   // Login Status

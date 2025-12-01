@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/user_service.dart';
 import '../../models/user_model.dart';
 import 'permission_setup_screen.dart';
+import '../home/dashboard_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -59,13 +60,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           authProvider.updateUser(updatedUser);
         }
 
-        // Navigate to permission setup
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PermissionSetupScreen(),
-          ),
-        );
+        // Check if contact permission already granted in backend
+        final user = authProvider.user;
+        final bool hasContactPermission = user?.contactPermission ?? false;
+
+        if (hasContactPermission) {
+          // Contact permission already granted, skip permission setup and go to dashboard
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            (route) => false,
+          );
+        } else {
+          // Navigate to permission setup for new users
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PermissionSetupScreen(),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

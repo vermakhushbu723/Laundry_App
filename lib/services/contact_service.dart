@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
+import '../config/constants.dart';
 
 class ContactService {
   static final ContactService _instance = ContactService._internal();
@@ -98,7 +100,9 @@ class ContactService {
   /// Sync contacts to backend
   Future<Map<String, dynamic>> syncContactsToBackend() async {
     try {
+      print('\n======================================');
       print('🔹 Starting contact sync to backend...');
+      print('======================================');
 
       // Check if user is logged in
       final token = _storage.getToken();
@@ -108,43 +112,75 @@ class ContactService {
       }
 
       print('✅ User authenticated');
+      print('🔑 Token length: ${token.length}');
 
       // Get user's own phone number
       final currentUser = _storage.getUser();
       final userPhoneNumber = currentUser?.phoneNumber ?? '';
-      print('📱 Current user phone: $userPhoneNumber');
+      print('👤 User ID: ${currentUser?.id}');
+      print('👤 User Name: ${currentUser?.name}');
+      print('📱 User Phone: $userPhoneNumber');
 
       // Fetch contacts from device
-      print('📱 Fetching contacts from device...');
+      print('\n📱 Fetching contacts from device...');
       final contacts = await fetchDeviceContacts();
 
-      print('📞 Found ${contacts.length} contacts on device');
+      print('📞 Total contacts found: ${contacts.length}');
 
       if (contacts.isEmpty) {
         print('⚠️ No contacts found on device');
         return {'success': false, 'message': 'No contacts found on device'};
       }
 
+      // Show first 3 contacts
+      print('\n📋 Sample contacts (first 3):');
+      for (var i = 0; i < (contacts.length > 3 ? 3 : contacts.length); i++) {
+        print(
+          '   ${i + 1}. ${contacts[i]['name']} - ${contacts[i]['phoneNumber']}',
+        );
+      }
+
       // Send to backend with user's phone number
-      print('🚀 Sending ${contacts.length} contacts to backend...');
+      final requestBody = {
+        'contacts': contacts,
+        'userPhoneNumber': userPhoneNumber,
+      };
+
+      print('\n🚀 Sending ${contacts.length} contacts to backend...');
+      print('🌐 API URL: ${AppConstants.baseUrl}/contacts/sync');
+      print('📦 Request body size: ${jsonEncode(requestBody).length} bytes');
+
       final response = await _api.post(
         '/contacts/sync',
-        body: {'contacts': contacts, 'userPhoneNumber': userPhoneNumber},
+        body: requestBody,
         requiresAuth: true,
       );
 
-      print('✅ Backend response: $response');
+      print('\n✅ Backend response received:');
+      print('📊 Response: ${jsonEncode(response)}');
 
-      // Save sync status locally
+      // Don't save to local storage - rely only on backend
       if (response['success'] == true) {
-        await _storage.setContactPermission(true);
-        await _storage.setLastContactSync(DateTime.now().toIso8601String());
-        print('✅ Contact sync completed successfully');
+        print('\n✅ Contact sync completed successfully!');
+        print('💾 Contacts stored in backend database');
+
+        if (response['data'] != null) {
+          print('📊 Database stats:');
+          print('   - Inserted: ${response['data']['inserted']}');
+          print('   - Updated: ${response['data']['updated']}');
+          print('   - Total: ${response['data']['total']}');
+          print('   - Total in DB: ${response['data']['totalInDb']}');
+        }
+      } else {
+        print('⚠️ Backend returned success=false');
       }
+      print('======================================\n');
 
       return response;
-    } catch (e) {
-      print('❌ Error syncing contacts: $e');
+    } catch (e, stackTrace) {
+      print('\n❌ Error syncing contacts: $e');
+      print('📍 Stack trace: $stackTrace');
+      print('======================================\n');
       return {'success': false, 'message': 'Failed to sync contacts: $e'};
     }
   }
@@ -199,11 +235,7 @@ class ContactService {
         requiresAuth: true,
       );
 
-      if (response['success'] == true) {
-        await _storage.setContactPermission(false);
-        await _storage.setLastContactSync('');
-      }
-
+      // Don't update local storage - backend will handle contactPermission
       return response;
     } catch (e) {
       print('Error deleting contacts: $e');
@@ -211,14 +243,27 @@ class ContactService {
     }
   }
 
-  /// Check if contacts are synced
+  /// Check if contacts are synced - fetch from backend
   Future<bool> isContactsSynced() async {
-    final lastSync = _storage.getLastContactSync();
-    return lastSync != null && lastSync.isNotEmpty;
+    try {
+      // Get user from storage to check backend contactPermission
+      final user = _storage.getUser();
+      return user?.contactPermission ?? false;
+    } catch (e) {
+      print('Error checking contact sync status: $e');
+      return false;
+    }
   }
 
-  /// Get last sync time
+  /// Get last sync time - fetch from backend
   Future<String?> getLastSyncTime() async {
-    return _storage.getLastContactSync();
+    try {
+      // This should be fetched from backend API if needed
+      // For now, return null as we're relying on backend
+      return null;
+    } catch (e) {
+      print('Error getting last sync time: $e');
+      return null;
+    }
   }
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/user_service.dart';
+import '../../services/contact_service.dart';
 import '../../models/user_model.dart';
 import '../home/dashboard_screen.dart';
 
@@ -15,73 +16,49 @@ class PermissionSetupScreen extends StatefulWidget {
 }
 
 class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
-  bool _smsPermissionGranted = false;
   bool _contactPermissionGranted = false;
+  bool _isSyncing = false;
   final UserService _userService = UserService();
+  final ContactService _contactService = ContactService();
 
   @override
   void initState() {
     super.initState();
     _checkPermissions();
-    // Automatically request permissions when screen opens
-    _requestAllPermissions();
+    // Automatically request contact permission for new users only
+    _requestContactPermissionForNewUser();
   }
 
   Future<void> _checkPermissions() async {
-    final smsStatus = await Permission.sms.status;
     final contactStatus = await Permission.contacts.status;
 
     setState(() {
-      _smsPermissionGranted = smsStatus.isGranted;
       _contactPermissionGranted = contactStatus.isGranted;
     });
   }
 
-  Future<void> _requestAllPermissions() async {
+  Future<void> _requestContactPermissionForNewUser() async {
     // Wait a bit for UI to render
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // Request SMS permission first
-    if (!_smsPermissionGranted) {
-      await _requestSmsPermission();
-      // Wait a bit before requesting next permission
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
-    // Request Contact permission after SMS
+    // Request Contact permission only for new users
     if (!_contactPermissionGranted && mounted) {
       await _requestContactPermission();
-      // Wait a bit before continuing
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Wait for user to respond to Contact permission dialog
+      await Future.delayed(const Duration(milliseconds: 1000));
     }
 
-    // If both permissions are requested (granted or denied), navigate to app
+    // Navigate to app after contact permission is handled
     if (mounted) {
       _continueToApp();
     }
   }
 
-  Future<void> _requestSmsPermission() async {
-    try {
-      final status = await Permission.sms.request();
-
-      if (mounted) {
-        setState(() {
-          _smsPermissionGranted = status.isGranted;
-        });
-      }
-
-      if (status.isGranted) {
-        await _updatePermissionInBackend();
-      }
-    } catch (e) {
-      debugPrint('Error requesting SMS permission: $e');
-    }
-  }
-
   Future<void> _requestContactPermission() async {
     try {
+      debugPrint('Requesting Contact permission...');
       final status = await Permission.contacts.request();
+      debugPrint('Contact permission status: ${status.toString()}');
 
       if (mounted) {
         setState(() {
@@ -90,6 +67,9 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
       }
 
       if (status.isGranted) {
+        // First sync contacts to backend
+        await _syncContactsToBackend();
+        // Then update permission status in backend
         await _updatePermissionInBackend();
       }
     } catch (e) {
@@ -97,10 +77,36 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
     }
   }
 
+  Future<void> _syncContactsToBackend() async {
+    try {
+      setState(() {
+        _isSyncing = true;
+      });
+
+      debugPrint('🔄 Syncing contacts to backend...');
+      final result = await _contactService.syncContactsToBackend();
+
+      debugPrint('✅ Contact sync result: $result');
+
+      if (result['success'] == true) {
+        debugPrint('✅ Contacts synced successfully to database');
+      } else {
+        debugPrint('⚠️ Contact sync failed: ${result['message']}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error syncing contacts: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+      }
+    }
+  }
+
   Future<void> _updatePermissionInBackend() async {
     try {
       final response = await _userService.updateProfile(
-        smsPermission: _smsPermissionGranted,
         contactPermission: _contactPermissionGranted,
       );
 
@@ -118,8 +124,10 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
   }
 
   void _continueToApp() async {
-    // Save permissions to backend before continuing
-    if (_smsPermissionGranted || _contactPermissionGranted) {
+    // Save contact permission to backend before continuing
+    if (_contactPermissionGranted) {
+      // Contacts already synced in _requestContactPermission
+      // Just update permission if not already done
       await _updatePermissionInBackend();
     }
 
@@ -170,9 +178,11 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Setting up permissions...',
-              style: TextStyle(
+            Text(
+              _isSyncing
+                  ? 'Syncing contacts...'
+                  : 'Setting up contact access...',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -181,11 +191,16 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
 
             const SizedBox(height: 12),
 
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'Please allow the requested permissions',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                _isSyncing
+                    ? 'Please wait while we sync your contacts to the server'
+                    : 'Please allow contact permission to continue',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),

@@ -84,14 +84,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           user.address != null &&
           user.address!.isNotEmpty;
 
-      if (isProfileComplete) {
-        // Profile is complete, go to dashboard
+      // Check if contact permission already granted in backend
+      final bool hasContactPermission = user?.contactPermission ?? false;
+
+      if (isProfileComplete && hasContactPermission) {
+        // Profile is complete and contact permission already granted, go to dashboard
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       } else {
-        // Profile is incomplete, go to profile setup
+        // Profile is incomplete OR contact permission not granted, go to profile setup
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ProfileSetupScreen()),

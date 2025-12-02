@@ -130,42 +130,60 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadServices,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Header Section
-          Text(
-            'Choose Your Service',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'We offer professional laundry services tailored to your needs',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate responsive spacing based on screen width
+          final screenWidth = constraints.maxWidth;
+          final horizontalPadding = screenWidth * 0.04; // 4% of screen width
+          final gridSpacing = screenWidth * 0.03; // 3% of screen width
 
-          // Services Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.75,
+          return ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 12,
             ),
-            itemCount: _services.length,
-            itemBuilder: (context, index) {
-              return _buildServiceCard(_services[index]);
-            },
-          ),
-        ],
+            children: [
+              // Header Section
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Choose Your Service',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenWidth < 360 ? 20 : null,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'We offer professional laundry services tailored to your needs',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: screenWidth < 360 ? 13 : null,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Services Grid
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: gridSpacing.clamp(8.0, 16.0),
+                  mainAxisSpacing: gridSpacing.clamp(8.0, 16.0),
+                  childAspectRatio: screenWidth < 360 ? 0.68 : 0.72,
+                ),
+                itemCount: _services.length,
+                itemBuilder: (context, index) {
+                  return _buildServiceCard(_services[index]);
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          );
+        },
       ),
     );
   }
@@ -184,83 +202,112 @@ class _ServicesScreenState extends State<ServicesScreen> {
           );
         },
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Service Icon/Image
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(35),
-                ),
-                child: Center(
-                  child: Text(
-                    service.icon ?? '🧺',
-                    style: const TextStyle(fontSize: 36),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Get available width for the card
+            final cardWidth = constraints.maxWidth;
 
-              // Service Name
-              Text(
-                service.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
+            // Calculate responsive sizes
+            final iconSize = (cardWidth * 0.35).clamp(50.0, 70.0);
+            final iconFontSize = (cardWidth * 0.18).clamp(28.0, 36.0);
+            final titleFontSize = (cardWidth * 0.08).clamp(13.0, 16.0);
+            final priceFontSize = (cardWidth * 0.085).clamp(14.0, 17.0);
+            final bodyFontSize = (cardWidth * 0.065).clamp(11.0, 13.0);
+            final verticalPadding = (cardWidth * 0.06).clamp(8.0, 12.0);
 
-              // Price
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '₹${service.price.toStringAsFixed(0)}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: cardWidth * 0.06,
+                vertical: verticalPadding,
               ),
-              const SizedBox(height: 8),
-
-              // Estimated Days
-              if (service.estimatedDays != null)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: AppColors.textSecondary,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Service Icon/Image
+                  Container(
+                    width: iconSize,
+                    height: iconSize,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(iconSize / 2),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${service.estimatedDays} days',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                    child: Center(
+                      child: Text(
+                        service.icon ?? '🧺',
+                        style: TextStyle(fontSize: iconFontSize),
                       ),
                     ),
-                  ],
-                ),
-            ],
-          ),
+                  ),
+                  SizedBox(height: cardWidth * 0.04),
+
+                  // Service Name
+                  Flexible(
+                    child: Text(
+                      service.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: titleFontSize,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: cardWidth * 0.03),
+
+                  // Price
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: cardWidth * 0.06,
+                      vertical: cardWidth * 0.025,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '₹${service.price.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: priceFontSize,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: cardWidth * 0.025),
+
+                  // Estimated Days
+                  if (service.estimatedDays != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: bodyFontSize + 1,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            '${service.estimatedDays} days',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: bodyFontSize,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

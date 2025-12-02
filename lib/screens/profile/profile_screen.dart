@@ -501,6 +501,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     if (shouldLogout == true && mounted) {
                       await authProvider.logout();
+                      if (mounted) {
+                        // Navigate to login screen and clear navigation stack
+                        Navigator.of(
+                          context,
+                        ).pushNamedAndRemoveUntil('/', (route) => false);
+                      }
                     }
                   },
                   style: OutlinedButton.styleFrom(

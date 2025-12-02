@@ -77,12 +77,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (success && mounted) {
       final user = authProvider.user;
 
-      // Check if user profile is complete
-      final bool isProfileComplete =
-          user?.name != null &&
-          user!.name!.isNotEmpty &&
-          user.address != null &&
-          user.address!.isNotEmpty;
+      // Check if user profile is complete using the backend flag
+      final bool isProfileComplete = user?.isProfileComplete ?? false;
 
       // Check if contact permission already granted in backend
       final bool hasContactPermission = user?.contactPermission ?? false;

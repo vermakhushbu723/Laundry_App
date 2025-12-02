@@ -83,7 +83,15 @@ class AuthService {
 
   // Logout
   Future<void> logout() async {
-    await _storage.clearAll();
+    try {
+      // Call backend logout API
+      await _api.post(AppConstants.logoutEndpoint);
+    } catch (e) {
+      print('⚠️ Logout API error (continuing with local logout): $e');
+    } finally {
+      // Always clear local storage regardless of API result
+      await _storage.clearAll();
+    }
   }
 
   // Check if user is logged in

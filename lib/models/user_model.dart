@@ -7,6 +7,7 @@ class UserModel {
   final DateTime? createdAt;
   final bool? smsPermission;
   final bool? contactPermission;
+  final bool? isProfileComplete;
 
   UserModel({
     this.id,
@@ -17,6 +18,7 @@ class UserModel {
     this.createdAt,
     this.smsPermission,
     this.contactPermission,
+    this.isProfileComplete,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class UserModel {
           : null,
       smsPermission: json['smsPermission'],
       contactPermission: json['contactPermission'],
+      isProfileComplete: json['isProfileComplete'],
     );
   }
 
@@ -44,6 +47,7 @@ class UserModel {
       'createdAt': createdAt?.toIso8601String(),
       'smsPermission': smsPermission,
       'contactPermission': contactPermission,
+      'isProfileComplete': isProfileComplete,
     };
   }
 
@@ -56,6 +60,7 @@ class UserModel {
     DateTime? createdAt,
     bool? smsPermission,
     bool? contactPermission,
+    bool? isProfileComplete,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -66,6 +71,7 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       smsPermission: smsPermission ?? this.smsPermission,
       contactPermission: contactPermission ?? this.contactPermission,
+      isProfileComplete: isProfileComplete ?? this.isProfileComplete,
     );
   }
 }

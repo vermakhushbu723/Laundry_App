@@ -15,6 +15,7 @@ class AppConstants {
   static const String signupEndpoint = '/auth/signup';
   static const String verifyOtpEndpoint = '/auth/verify-otp';
   static const String resendOtpEndpoint = '/auth/resend-otp';
+  static const String logoutEndpoint = '/auth/logout';
   static const String profileEndpoint = '/user/profile';
   static const String ordersEndpoint = '/orders';
   static const String servicesEndpoint = '/services';

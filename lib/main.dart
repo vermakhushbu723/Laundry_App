@@ -128,11 +128,7 @@ class MyApp extends StatelessWidget {
               '👤 User: ${user?.name ?? "No name"}, Phone: ${user?.phoneNumber ?? "No phone"}',
             );
 
-            final bool isProfileComplete =
-                user?.name != null &&
-                user!.name!.isNotEmpty &&
-                user.address != null &&
-                user.address!.isNotEmpty;
+            final bool isProfileComplete = user?.isProfileComplete ?? false;
 
             debugPrint('✔️ Profile Complete: $isProfileComplete');
 

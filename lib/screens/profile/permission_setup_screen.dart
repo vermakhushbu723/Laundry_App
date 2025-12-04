@@ -180,8 +180,8 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
 
             Text(
               _isSyncing
-                  ? 'Syncing contacts...'
-                  : 'Setting up contact access...',
+                  ? 'Aapka din busy ho sakta hai… par aapke kapde hamesha fresh rahenge.'
+                  : 'Ab laundry ka jhanjhat nahi — bas tap karo, ho gaya!',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -195,8 +195,8 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 _isSyncing
-                    ? 'Please wait while we sync your contacts to the server'
-                    : 'Please allow contact permission to continue',
+                    ? 'Bas kuch hi seconds… aur aapka laundry ka kaam ho jayega smart!'
+                    : 'Ek baar permission de dijiye, phir kabhi tension nahi!',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
